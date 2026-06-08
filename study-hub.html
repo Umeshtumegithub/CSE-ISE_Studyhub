@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CS/ISE Study Hub — Learn. Build. Grow.</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #03050d;
+  --surface: #07091a;
+  --card: #080c1e;
+  --border: #0f1a35;
+  --neon: #00f5ff;
+  --magenta: #ff006e;
+  --violet: #8b5cf6;
+  --orange: #ff7b00;
+  --green: #00ff9d;
+  --text: #d4e5ff;
+  --muted: #4a6080;
+  --glow-neon: rgba(0,245,255,0.15);
+  --glow-mag: rgba(255,0,110,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ══ CUSTOM CURSOR ══ */
+#cursor {
+  position: fixed; width: 12px; height: 12px;
+  background: var(--neon); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease, width 0.2s, height 0.2s, background 0.2s;
+  box-shadow: 0 0 12px var(--neon), 0 0 24px var(--neon);
+  mix-blend-mode: screen;
+}
+#cursor-ring {
+  position: fixed; width: 36px; height: 36px;
+  border: 1.5px solid rgba(0,245,255,0.5);
+  border-radius: 50%; pointer-events: none;
+  z-index: 9998; transform: translate(-50%, -50%);
+  transition: transform 0.18s ease, width 0.25s, height 0.25s, border-color 0.2s;
+}
+body:hover #cursor { opacity: 1; }
+
+/* ══ LOADER ══ */
+#loader {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2rem;
+}
+.loader-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 3rem; font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 30px var(--neon);
+  animation: glitchIn 1s ease forwards;
+}
+.loader-bar-wrap {
+  width: 280px; height: 2px;
+  background: var(--border);
+  border-radius: 2px; overflow: hidden;
+  position: relative;
+}
+.loader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon), var(--magenta));
+  border-radius: 2px;
+  animation: loadFill 1.8s ease forwards;
+  box-shadow: 0 0 10px var(--neon);
+}
+.loader-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; color: var(--muted);
+  letter-spacing: 2px;
+  animation: blink 0.8s step-end infinite;
+}
+@keyframes loadFill { from{width:0} to{width:100%} }
+@keyframes blink { 50%{opacity:0} }
+@keyframes glitchIn {
+  0%   { opacity:0; clip-path: polygon(0 0,100% 0,100% 0,0 0); }
+  40%  { opacity:1; clip-path: polygon(0 0,100% 0,100% 45%,0 45%); filter: hue-rotate(90deg); }
+  70%  { clip-path: polygon(0 0,100% 0,100% 80%,0 80%); filter: none; }
+  100% { clip-path: polygon(0 0,100% 0,100% 100%,0 100%); }
+}
+
+/* ══ PARTICLE CANVAS ══ */
+#particleCanvas {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  opacity: 0.6;
+}
+
+/* ══ SCAN LINE ══ */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 2px,
+    rgba(0,245,255,0.012) 2px, rgba(0,245,255,0.012) 4px
+  );
+  pointer-events: none; z-index: 1;
+}
+
+/* ══ FLOATING ORBS ══ */
+.orb {
+  position: fixed; border-radius: 50%;
+  filter: blur(80px); opacity: 0.25;
+  pointer-events: none; z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.orb1 { width: 500px; height: 500px; background: var(--neon); top: -150px; left: -100px; animation-duration: 20s; }
+.orb2 { width: 400px; height: 400px; background: var(--magenta); bottom: -100px; right: -80px; animation-duration: 25s; animation-delay: -8s; }
+.orb3 { width: 300px; height: 300px; background: var(--violet); top: 40%; left: 60%; animation-duration: 22s; animation-delay: -4s; }
+@keyframes drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(60px, -40px) scale(1.1); }
+  66%  { transform: translate(-30px, 60px) scale(0.9); }
+  100% { transform: translate(40px, 20px) scale(1.05); }
+}
+
+/* ══ NAV ══ */
+nav {
+  position: sticky; top: 0; z-index: 500;
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem;
+  background: rgba(3,5,13,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,245,255,0.08);
+}
+nav::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0;
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  animation: navLine 4s ease-in-out infinite;
+}
+@keyframes navLine {
+  0%,100%{opacity:0.3; transform:scaleX(0.6)}
+  50%{opacity:1; transform:scaleX(1)}
+}
+.logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--neon); text-decoration: none;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(0,245,255,0.6);
+  position: relative;
+}
+.logo em { color: var(--magenta); font-style: normal; text-shadow: 0 0 20px rgba(255,0,110,0.6); }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 1px;
+  transition: color 0.2s, text-shadow 0.2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute;
+  bottom: -4px; left: 0; width: 0; height: 1px;
+  background: var(--neon);
+  transition: width 0.3s;
+  box-shadow: 0 0 6px var(--neon);
+}
+.nav-links a:hover { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+.nav-links a:hover::after { width: 100%; }
+.nav-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 1px;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid rgba(0,245,255,0.3);
+  color: var(--neon); background: var(--glow-neon);
+  animation: pulse-border 2s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,0.3)}
+  50%{box-shadow:0 0 0 4px rgba(0,245,255,0.08)}
+}
+
+/* ══ HERO ══ */
+.hero {
+  position: relative; z-index: 2;
+  padding: 110px 2rem 90px;
+  text-align: center;
+  max-width: 960px; margin: 0 auto;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 2px;
+  color: var(--neon); background: var(--glow-neon);
+  border: 1px solid rgba(0,245,255,0.25);
+  padding: 6px 16px; border-radius: 30px;
+  margin-bottom: 2rem;
+  opacity: 0; animation: heroFadeUp 0.7s 0.2s ease forwards;
+}
+.dot-live {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,100%{transform:scale(1); opacity:1}
+  50%{transform:scale(1.5); opacity:0.6}
+}
+.hero h1 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  opacity: 0; animation: heroFadeUp 0.8s 0.35s ease forwards;
+}
+.hero h1 .line1 { display: block; color: var(--text); }
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--neon) 0%, var(--magenta) 60%, var(--orange) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(0,245,255,0.4));
+  animation: heroFadeUp 0.8s 0.35s ease forwards, gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%,100%{ filter:drop-shadow(0 0 30px rgba(0,245,255,0.4)); }
+  50%{ filter:drop-shadow(0 0 50px rgba(255,0,110,0.5)); }
+}
+.hero-sub {
+  margin: 1.8rem auto 0; max-width: 580px;
+  font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+  opacity: 0; animation: heroFadeUp 0.8s 0.5s ease forwards;
+}
+.typewriter-text { color: var(--neon); }
+.cursor-blink { animation: blink 0.7s step-end infinite; color: var(--neon); }
+
+/* stats */
+.hero-stats {
+  display: flex; justify-content: center; gap: 4rem;
+  margin-top: 3.5rem;
+  opacity: 0; animation: heroFadeUp 0.8s 0.65s ease forwards;
+}
+.stat { text-align: center; position: relative; }
+.stat::after {
+  content: '';
+  position: absolute; top: 50%; right: -2rem;
+  transform: translateY(-50%);
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--border), transparent);
+}
+.stat:last-child::after { display: none; }
+.stat-num {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 3rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--neon), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; letter-spacing: 1px; }
+
+@keyframes heroFadeUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ══ SCROLL CTA ══ */
+.scroll-cta {
+  margin-top: 3rem; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  opacity: 0; animation: heroFadeUp 0.8s 1s ease forwards;
+}
+.scroll-mouse {
+  width: 26px; height: 40px; border: 2px solid rgba(0,245,255,0.3);
+  border-radius: 13px; display: flex; justify-content: center; padding-top: 6px;
+}
+.scroll-wheel {
+  width: 3px; height: 8px; background: var(--neon);
+  border-radius: 2px;
+  animation: scrollWheel 1.6s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--neon);
+}
+@keyframes scrollWheel {
+  0%{transform:translateY(0);opacity:1}
+  80%{transform:translateY(12px);opacity:0}
+  81%{transform:translateY(0);opacity:0}
+  100%{opacity:1}
+}
+.scroll-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; color: var(--muted); letter-spacing: 2px;
+}
+
+/* ══ CONTROLS ══ */
+.controls {
+  position: relative; z-index: 2;
+  max-width: 1140px; margin: 0 auto 3rem;
+  padding: 0 2rem;
+  display: flex; flex-direction: column; gap: 1.2rem;
+}
+.search-wrap {
+  position: relative; max-width: 520px;
+}
+.search-wrap input {
+  width: 100%;
+  background: rgba(8,12,30,0.8);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem; letter-spacing: 0.5px;
+  padding: 13px 16px 13px 48px;
+  border-radius: 12px; outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  backdrop-filter: blur(10px);
+}
+.search-wrap input:focus {
+  border-color: var(--neon);
+  box-shadow: 0 0 0 3px rgba(0,245,255,0.08), 0 0 20px rgba(0,245,255,0.1);
+}
+.search-wrap input::placeholder { color: var(--muted); }
+.s-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 1rem; pointer-events: none;
+}
+.filter-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.f-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 1px;
+  padding: 7px 16px; border-radius: 25px;
+  border: 1px solid var(--border);
+  background: rgba(8,12,30,0.6);
+  color: var(--muted); cursor: pointer;
+  transition: all 0.25s; position: relative; overflow: hidden;
+}
+.f-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--neon), var(--magenta));
+  opacity: 0; transition: opacity 0.25s;
+}
+.f-btn span { position: relative; z-index: 1; }
+.f-btn:hover { border-color: var(--neon); color: var(--neon); }
+.f-btn.active {
+  border-color: var(--neon); color: var(--bg);
+  background: var(--neon); text-shadow: none;
+  box-shadow: 0 0 15px rgba(0,245,255,0.4);
+}
+.f-btn.active::before { opacity: 1; }
+
+/* ══ SECTION HEADER ══ */
+.sec-hdr {
+  max-width: 1140px; margin: 0 auto 1.8rem;
+  padding: 0 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.sec-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(0,245,255,0.3), transparent);
+}
+.sec-hdr h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.6rem; font-weight: 700;
+  letter-spacing: 2px; white-space: nowrap;
+}
+.sec-hdr h2 span { color: var(--neon); }
+.sec-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ══ SUBJECT CARDS ══ */
+.subjects-grid {
+  max-width: 1140px; margin: 0 auto 5rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 1.4rem;
+}
+.s-card {
+  position: relative;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 1.8rem;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s;
+  will-change: transform;
+}
+/* animated gradient border */
+.s-card::before {
+  content: ''; position: absolute; inset: -2px;
+  border-radius: 18px;
+  background: conic-gradient(
+    var(--c1, #00f5ff) 0deg,
+    var(--c2, #ff006e) 120deg,
+    var(--c3, #8b5cf6) 240deg,
+    var(--c1, #00f5ff) 360deg
+  );
+  z-index: -1; opacity: 0;
+  animation: rotateBorder 4s linear infinite;
+  transition: opacity 0.3s;
+}
+.s-card::after {
+  content: ''; position: absolute; inset: 1px;
+  border-radius: 15px;
+  background: var(--card); z-index: -1;
+}
+@keyframes rotateBorder {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.s-card:hover { transform: translateY(-8px) scale(1.02); }
+.s-card:hover::before { opacity: 1; }
+.s-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,245,255,0.08); }
+
+/* holographic shimmer overlay */
+.s-card .shimmer {
+  position: absolute; inset: 0; border-radius: 16px;
+  background: linear-gradient(
+    105deg,
+    transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%
+  );
+  background-size: 200% 100%;
+  opacity: 0; transition: opacity 0.3s;
+  animation: shimmerMove 2s ease-in-out infinite;
+}
+.s-card:hover .shimmer { opacity: 1; }
+@keyframes shimmerMove {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+.c-icon {
+  width: 50px; height: 50px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; position: relative;
+  transition: transform 0.3s;
+}
+.s-card:hover .c-icon { transform: rotate(-8deg) scale(1.1); }
+.c-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; letter-spacing: 1px;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid; opacity: 0.7;
+}
+.c-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+.c-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+.c-footer {
+  display: flex; gap: 1.2rem; margin-top: 1.3rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--muted);
+}
+.c-footer span { display: flex; align-items: center; gap: 4px; }
+
+/* color themes */
+.t-cyan  { --c1:#00f5ff; --c2:#0088ff; --c3:#00ffa8; }
+.t-magenta { --c1:#ff006e; --c2:#ff7b00; --c3:#8b5cf6; }
+.t-green { --c1:#00ff9d; --c2:#00f5ff; --c3:#00aa6e; }
+.t-orange { --c1:#ff7b00; --c2:#ff006e; --c3:#ffd700; }
+.t-violet { --c1:#8b5cf6; --c2:#ec4899; --c3:#00f5ff; }
+.t-gold { --c1:#ffd700; --c2:#ff7b00; --c3:#00f5ff; }
+
+.ic-cyan { background:rgba(0,245,255,0.12); }
+.ic-mag  { background:rgba(255,0,110,0.12); }
+.ic-grn  { background:rgba(0,255,157,0.12); }
+.ic-org  { background:rgba(255,123,0,0.12); }
+.ic-vio  { background:rgba(139,92,246,0.12); }
+.ic-gld  { background:rgba(255,215,0,0.12); }
+
+.tag-cyan  { color:var(--neon); border-color:rgba(0,245,255,0.3); background:rgba(0,245,255,0.05); }
+.tag-mag   { color:#ff006e; border-color:rgba(255,0,110,0.3); background:rgba(255,0,110,0.05); }
+.tag-grn   { color:var(--green); border-color:rgba(0,255,157,0.3); background:rgba(0,255,157,0.05); }
+.tag-org   { color:var(--orange); border-color:rgba(255,123,0,0.3); background:rgba(255,123,0,0.05); }
+.tag-vio   { color:#a78bfa; border-color:rgba(139,92,246,0.3); background:rgba(139,92,246,0.05); }
+.tag-gld   { color:#ffd700; border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05); }
+
+/* ══ VIDEO CARDS ══ */
+.videos-grid {
+  max-width: 1140px; margin: 0 auto 5rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.4rem;
+}
+.v-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s, box-shadow 0.3s;
+  display: flex; flex-direction: column;
+  will-change: transform;
+}
+.v-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(139,92,246,0.08);
+}
+.v-thumb {
+  position: relative; aspect-ratio: 16/9;
+  background: #020510; overflow: hidden;
+}
+.v-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+.v-card:hover .v-thumb img { transform: scale(1.06); }
+.v-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s;
+}
+.v-card:hover .v-overlay { background: rgba(0,0,0,0.45); }
+.play-ring {
+  width: 56px; height: 56px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  background: rgba(139,92,246,0.2);
+  transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+  position: relative;
+}
+.play-ring::before {
+  content: ''; position: absolute; inset: -6px;
+  border-radius: 50%; border: 1px solid rgba(139,92,246,0.3);
+  animation: ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100%{transform:scale(1);opacity:0.3}
+  50%{transform:scale(1.3);opacity:0}
+}
+.v-card:hover .play-ring {
+  transform: scale(1.15);
+  background: rgba(139,92,246,0.5);
+  border-color: var(--violet);
+  box-shadow: 0 0 30px rgba(139,92,246,0.5);
+}
+.play-arrow { color: #fff; font-size: 1.2rem; padding-left: 4px; }
+.v-dur {
+  position: absolute; bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem; color: #fff; padding: 2px 8px; border-radius: 4px;
+}
+.v-body { padding: 1.1rem 1.3rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
+.v-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.63rem; letter-spacing: 1.5px;
+  margin-bottom: 0.55rem;
+}
+.v-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem; font-weight: 700; letter-spacing: 0.3px;
+  line-height: 1.4; margin-bottom: 0.4rem; flex: 1;
+}
+.v-ch { font-size: 0.76rem; color: var(--muted); margin-bottom: 1.1rem; }
+.v-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 0.5px;
+  color: #a78bfa; text-decoration: none;
+  padding: 9px 16px; border-radius: 10px;
+  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(139,92,246,0.07);
+  transition: all 0.25s; width: fit-content;
+  position: relative; overflow: hidden;
+}
+.v-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(0,245,255,0.1));
+  opacity: 0; transition: opacity 0.25s;
+}
+.v-btn:hover {
+  border-color: var(--violet); color: #c4b5fd;
+  box-shadow: 0 0 20px rgba(139,92,246,0.3);
+}
+.v-btn:hover::before { opacity: 1; }
+.v-btn span { position: relative; z-index: 1; }
+
+/* ══ RESOURCES ══ */
+.res-grid {
+  max-width: 1140px; margin: 0 auto 6rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
+}
+.r-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  display: flex; align-items: center; gap: 1rem;
+  text-decoration: none; color: var(--text);
+  transition: all 0.25s;
+  position: relative; overflow: hidden;
+}
+.r-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--neon), var(--green));
+  opacity: 0; transition: opacity 0.25s;
+  box-shadow: 0 0 10px var(--neon);
+}
+.r-item:hover {
+  border-color: rgba(0,245,255,0.25);
+  background: rgba(0,245,255,0.02);
+  transform: translateX(5px);
+}
+.r-item:hover::before { opacity: 1; }
+.r-ico {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(0,255,157,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+  transition: transform 0.25s;
+}
+.r-item:hover .r-ico { transform: scale(1.1) rotate(5deg); }
+.r-name { font-weight: 600; font-size: 0.87rem; }
+.r-type { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+.r-arr { margin-left: auto; color: var(--muted); font-size: 0.9rem; transition: transform 0.2s, color 0.2s; }
+.r-item:hover .r-arr { transform: translateX(3px); color: var(--neon); }
+
+/* ══ FOOTER ══ */
+footer {
+  position: relative; z-index: 2;
+  border-top: 1px solid var(--border);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+footer::before {
+  content: '';
+  position: absolute; top: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon), var(--magenta), transparent);
+  animation: navLine 6s ease-in-out infinite;
+}
+.footer-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.8rem; font-weight: 700;
+  color: var(--neon); text-shadow: 0 0 20px rgba(0,245,255,0.5);
+  margin-bottom: 0.8rem;
+}
+.footer-logo em { color: var(--magenta); font-style: normal; }
+footer p { font-size: 0.82rem; color: var(--muted); line-height: 1.8; }
+footer span { color: var(--neon); }
+
+/* ══ HIDDEN ══ */
+.s-card.hidden, .v-card.hidden, .r-item.hidden { display: none; }
+
+/* ══ REVEAL ANIMATION ══ */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.8,0.25,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 680px) {
+  nav { padding: 0 1.2rem; }
+  .nav-links { display: none; }
+  .hero { padding: 70px 1.2rem 60px; }
+  .hero-stats { gap: 2rem; }
+  .subjects-grid, .videos-grid, .res-grid { grid-template-columns: 1fr; padding: 0 1.2rem; }
+  .controls, .sec-hdr { padding: 0 1.2rem; }
+  body { cursor: auto; }
+  #cursor, #cursor-ring { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">CS / ISE</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-text">INITIALIZING STUDY HUB...</div>
+</div>
+
+<!-- FLOATING ORBS -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#">CS<em>/</em>ISE <em>STUDY HUB</em></a>
+  <ul class="nav-links">
+    <li><a href="#subjects">SUBJECTS</a></li>
+    <li><a href="#videos">VIDEOS</a></li>
+    <li><a href="#resources">RESOURCES</a></li>
+  </ul>
+  <span class="nav-chip">● FREE ACCESS</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="dot-live"></span>
+    COMPUTER SCIENCE &amp; INFORMATION SCIENCE &amp; ENGINEERING
+  </div>
+  <h1>
+    <span class="line1">YOUR ULTIMATE</span>
+    <span class="line2" id="glitchTitle">STUDY HUB</span>
+  </h1>
+  <p class="hero-sub">
+    Curated video lectures, notes &amp; resources for every subject.<br/>
+    <span class="typewriter-text" id="typeTarget"></span><span class="cursor-blink">|</span>
+  </p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num" data-target="12">0</div><div class="stat-label">CORE SUBJECTS</div></div>
+    <div class="stat"><div class="stat-num" data-target="15">0</div><div class="stat-label">VIDEO LECTURES</div></div>
+    <div class="stat"><div class="stat-num" data-target="20">0</div><div class="stat-label">FREE RESOURCES</div></div>
+  </div>
+  <div class="scroll-cta">
+    <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+    <div class="scroll-label">SCROLL TO EXPLORE</div>
+  </div>
+</section>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="search-wrap">
+    <span class="s-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search subjects, topics, videos…"/>
+  </div>
+  <div class="filter-row" id="filterRow">
+    <button class="f-btn active" data-filter="all"><span>ALL</span></button>
+    <button class="f-btn" data-filter="cs"><span>CORE CS</span></button>
+    <button class="f-btn" data-filter="ise"><span>INFO SCIENCE</span></button>
+    <button class="f-btn" data-filter="math"><span>MATH &amp; THEORY</span></button>
+    <button class="f-btn" data-filter="web"><span>WEB DEV</span></button>
+    <button class="f-btn" data-filter="ai"><span>AI / ML</span></button>
+    <button class="f-btn" data-filter="systems"><span>SYSTEMS</span></button>
+  </div>
+</div>
+
+<!-- SUBJECTS -->
+<div class="sec-hdr" id="subjects">
+  <h2>CORE <span>SUBJECTS</span></h2>
+  <div class="sec-line"></div>
+  <span class="sec-count" id="subjectCount">12 SUBJECTS</span>
+</div>
+<div class="subjects-grid" id="subjectsGrid">
+
+  <div class="s-card t-cyan reveal" data-category="cs" data-keywords="data structures algorithms arrays linked list trees sorting graphs">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-cyan">🌳</div>
+      <span class="c-tag tag-cyan">CORE CS</span>
+    </div>
+    <div class="c-title">Data Structures &amp; Algorithms</div>
+    <div class="c-desc">Arrays, Linked Lists, Trees, Graphs, Sorting, DP and complexity analysis — the backbone of every CS interview.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 8 Videos</span><span>⭐ Essential</span></div>
+  </div>
+
+  <div class="s-card t-magenta reveal" data-category="systems" data-keywords="operating system process thread memory scheduling deadlock">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-mag">⚙️</div>
+      <span class="c-tag tag-mag">SYSTEMS</span>
+    </div>
+    <div class="c-title">Operating Systems</div>
+    <div class="c-desc">Process management, memory management, CPU scheduling, file systems, deadlocks &amp; synchronization.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 6 Videos</span><span>⭐ Core</span></div>
+  </div>
+
+  <div class="s-card t-green reveal" data-category="cs" data-keywords="dbms database sql relational normalization transactions">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-grn">🗄️</div>
+      <span class="c-tag tag-grn">DATABASE</span>
+    </div>
+    <div class="c-title">Database Management Systems</div>
+    <div class="c-desc">Relational model, SQL, normalization, ER diagrams, transactions, indexing &amp; query optimization.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 5 Videos</span><span>⭐ Core</span></div>
+  </div>
+
+  <div class="s-card t-orange reveal" data-category="systems" data-keywords="computer networks tcp ip osi model protocols routing subnetting">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-org">🌐</div>
+      <span class="c-tag tag-org">NETWORKS</span>
+    </div>
+    <div class="c-title">Computer Networks</div>
+    <div class="c-desc">OSI &amp; TCP/IP model, IP addressing, subnetting, routing protocols, TCP/UDP, HTTP, DNS &amp; security.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 5 Videos</span><span>⭐ Core</span></div>
+  </div>
+
+  <div class="s-card t-violet reveal" data-category="web" data-keywords="web development html css javascript react frontend backend node">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-vio">💻</div>
+      <span class="c-tag tag-vio">WEB DEV</span>
+    </div>
+    <div class="c-title">Web Technologies</div>
+    <div class="c-desc">HTML5, CSS3, JavaScript ES6+, DOM, React, REST APIs, Node.js &amp; responsive design principles.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 6 Videos</span><span>⭐ Hot</span></div>
+  </div>
+
+  <div class="s-card t-gold reveal" data-category="ai" data-keywords="machine learning ai python neural network deep learning classification regression">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-gld">🤖</div>
+      <span class="c-tag tag-gld">AI / ML</span>
+    </div>
+    <div class="c-title">Machine Learning &amp; AI</div>
+    <div class="c-desc">Supervised/unsupervised learning, neural networks, scikit-learn, TensorFlow &amp; model evaluation.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 6 Videos</span><span>⭐ Trending</span></div>
+  </div>
+
+  <div class="s-card t-cyan reveal" data-category="math" data-keywords="discrete mathematics logic sets graph theory combinatorics probability">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-cyan">∑</div>
+      <span class="c-tag tag-cyan">MATH</span>
+    </div>
+    <div class="c-title">Discrete Mathematics</div>
+    <div class="c-desc">Mathematical logic, set theory, relations, graph theory, combinatorics &amp; formal languages.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 4 Videos</span><span>⭐ Foundation</span></div>
+  </div>
+
+  <div class="s-card t-magenta reveal" data-category="cs" data-keywords="object oriented programming java c++ oops inheritance polymorphism encapsulation">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-mag">🧩</div>
+      <span class="c-tag tag-mag">OOP</span>
+    </div>
+    <div class="c-title">Object-Oriented Programming</div>
+    <div class="c-desc">Classes, inheritance, polymorphism, encapsulation in Java &amp; C++. Design patterns &amp; SOLID principles.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 5 Videos</span><span>⭐ Core</span></div>
+  </div>
+
+  <div class="s-card t-green reveal" data-category="ise" data-keywords="information security cyber cryptography encryption network security hacking">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-grn">🔒</div>
+      <span class="c-tag tag-grn">SECURITY</span>
+    </div>
+    <div class="c-title">Information Security &amp; Cryptography</div>
+    <div class="c-desc">Symmetric &amp; asymmetric crypto, hashing, digital signatures, PKI, network security &amp; ethical hacking.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 4 Videos</span><span>⭐ Hot</span></div>
+  </div>
+
+  <div class="s-card t-orange reveal" data-category="systems" data-keywords="computer organization architecture assembly cpu memory cache pipeline">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-org">🖥️</div>
+      <span class="c-tag tag-org">ARCHITECTURE</span>
+    </div>
+    <div class="c-title">Computer Organization &amp; Architecture</div>
+    <div class="c-desc">CPU design, instruction sets, memory hierarchy, cache, pipelining, ALU &amp; RISC vs CISC.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 4 Videos</span><span>⭐ Core</span></div>
+  </div>
+
+  <div class="s-card t-violet reveal" data-category="ise" data-keywords="software engineering sdlc agile testing project management uml design">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-vio">📐</div>
+      <span class="c-tag tag-vio">SE</span>
+    </div>
+    <div class="c-title">Software Engineering</div>
+    <div class="c-desc">SDLC models, agile &amp; scrum, UML diagrams, testing methodologies, software quality &amp; project estimation.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 4 Videos</span><span>⭐ Industry</span></div>
+  </div>
+
+  <div class="s-card t-gold reveal" data-category="math" data-keywords="theory of computation automata turing machine formal languages regular expressions">
+    <div class="shimmer"></div>
+    <div class="card-top">
+      <div class="c-icon ic-gld">🔬</div>
+      <span class="c-tag tag-gld">THEORY</span>
+    </div>
+    <div class="c-title">Theory of Computation</div>
+    <div class="c-desc">Finite automata, regular expressions, CFG, pushdown automata, Turing machines &amp; complexity classes.</div>
+    <div class="c-footer"><span>📖 Notes</span><span>🎬 4 Videos</span><span>⭐ GATE</span></div>
+  </div>
+
+</div>
+
+<!-- VIDEOS -->
+<div class="sec-hdr" id="videos">
+  <h2>VIDEO <span>LECTURES</span></h2>
+  <div class="sec-line"></div>
+  <span class="sec-count" id="videoCount">15 VIDEOS</span>
+</div>
+<div class="videos-grid" id="videosGrid">
+
+  <div class="v-card reveal" data-category="cs" data-keywords="data structures algorithms arrays linked list trees sorting">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/RBSGKlAvoiM/maxresdefault.jpg" alt="DSA" loading="lazy" onerror="this.src='https://img.youtube.com/vi/RBSGKlAvoiM/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">8:04:58</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--neon)">DATA STRUCTURES &amp; ALGORITHMS</div>
+      <div class="v-title">Data Structures &amp; Algorithms – Full Course for Beginners</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=RBSGKlAvoiM" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="dynamic programming algorithms recursion memoization">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/oBt53YbR9Kk/maxresdefault.jpg" alt="DP" loading="lazy" onerror="this.src='https://img.youtube.com/vi/oBt53YbR9Kk/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">5:22:09</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--neon)">ALGORITHMS</div>
+      <div class="v-title">Dynamic Programming – Full Course (All Patterns)</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=oBt53YbR9Kk" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="systems" data-keywords="operating systems process memory scheduling deadlock">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/vBURTt97EkA/maxresdefault.jpg" alt="OS" loading="lazy" onerror="this.src='https://img.youtube.com/vi/vBURTt97EkA/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">9:43:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#ff006e">OPERATING SYSTEMS</div>
+      <div class="v-title">Operating Systems – Full Course (Process, Memory, Scheduling)</div>
+      <div class="v-ch">Gate Smashers</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=vBURTt97EkA" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="dbms database sql normalization transactions">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/4cWkVbC2bNE/maxresdefault.jpg" alt="DBMS" loading="lazy" onerror="this.src='https://img.youtube.com/vi/4cWkVbC2bNE/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">4:20:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--green)">DATABASE MANAGEMENT</div>
+      <div class="v-title">DBMS Full Course – SQL, Normalization, Transactions &amp; More</div>
+      <div class="v-ch">Gate Smashers</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=4cWkVbC2bNE" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="sql database queries joins select insert">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/HXV3zeQKqGY/maxresdefault.jpg" alt="SQL" loading="lazy" onerror="this.src='https://img.youtube.com/vi/HXV3zeQKqGY/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">4:20:22</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--green)">DATABASE MANAGEMENT</div>
+      <div class="v-title">SQL Tutorial – Full Database Course for Beginners</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=HXV3zeQKqGY" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="systems" data-keywords="computer networks tcp ip osi protocols routing subnetting">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/qiQR5rTSshw/maxresdefault.jpg" alt="Networks" loading="lazy" onerror="this.src='https://img.youtube.com/vi/qiQR5rTSshw/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">9:00:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--orange)">COMPUTER NETWORKS</div>
+      <div class="v-title">Computer Networks Full Course – OSI, TCP/IP, Routing &amp; More</div>
+      <div class="v-ch">Gate Smashers</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=qiQR5rTSshw" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="java object oriented programming oop classes inheritance polymorphism">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/eIrMbAQSU34/maxresdefault.jpg" alt="Java OOP" loading="lazy" onerror="this.src='https://img.youtube.com/vi/eIrMbAQSU34/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">12:11:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#ec4899">OOP / JAVA</div>
+      <div class="v-title">Java Programming – Complete Beginner to Expert Course</div>
+      <div class="v-ch">Programming with Mosh</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=eIrMbAQSU34" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="ai" data-keywords="machine learning python sklearn classification regression neural">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/NWONeJKn6kc/maxresdefault.jpg" alt="ML" loading="lazy" onerror="this.src='https://img.youtube.com/vi/NWONeJKn6kc/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">6:31:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#ffd700">MACHINE LEARNING</div>
+      <div class="v-title">Machine Learning with Python – Full Course for Beginners</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=NWONeJKn6kc" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="ai" data-keywords="deep learning neural network tensorflow keras cnn">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/tPYj3fFJGjk/maxresdefault.jpg" alt="DL" loading="lazy" onerror="this.src='https://img.youtube.com/vi/tPYj3fFJGjk/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">6:57:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#ffd700">DEEP LEARNING</div>
+      <div class="v-title">Deep Learning Full Course – Neural Networks with TensorFlow</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=tPYj3fFJGjk" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="web" data-keywords="html css web development frontend beginner responsive">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/mU6anWqZJcc/maxresdefault.jpg" alt="HTML CSS" loading="lazy" onerror="this.src='https://img.youtube.com/vi/mU6anWqZJcc/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">11:00:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#a78bfa">WEB TECHNOLOGIES</div>
+      <div class="v-title">HTML &amp; CSS – Full Course Zero to Hero</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=mU6anWqZJcc" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="web" data-keywords="javascript es6 dom programming events async">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/jS4aFq5-91M/maxresdefault.jpg" alt="JS" loading="lazy" onerror="this.src='https://img.youtube.com/vi/jS4aFq5-91M/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">8:37:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#a78bfa">WEB TECHNOLOGIES</div>
+      <div class="v-title">JavaScript Programming – Full Course (ES6, DOM, APIs)</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=jS4aFq5-91M" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="ise" data-keywords="cyber security cryptography network security encryption hacking ethical">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/U_P23SqJaDc/maxresdefault.jpg" alt="Cyber" loading="lazy" onerror="this.src='https://img.youtube.com/vi/U_P23SqJaDc/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">15:00:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--green)">INFORMATION SECURITY</div>
+      <div class="v-title">Cyber Security Full Course for Beginners</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=U_P23SqJaDc" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="python programming beginner full course basics">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/_uQrJ0TkZlc/maxresdefault.jpg" alt="Python" loading="lazy" onerror="this.src='https://img.youtube.com/vi/_uQrJ0TkZlc/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">6:26:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--neon)">PROGRAMMING</div>
+      <div class="v-title">Python Tutorial for Beginners – Full Course in 6 Hours</div>
+      <div class="v-ch">Programming with Mosh</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=_uQrJ0TkZlc" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="cs" data-keywords="c++ programming oop pointers memory management">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/vLnPwxZdW4Y/maxresdefault.jpg" alt="C++" loading="lazy" onerror="this.src='https://img.youtube.com/vi/vLnPwxZdW4Y/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">31:35:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:var(--neon)">PROGRAMMING</div>
+      <div class="v-title">C++ Full Course – Complete Tutorial Basics to Advanced</div>
+      <div class="v-ch">freeCodeCamp.org</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=vLnPwxZdW4Y" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+  <div class="v-card reveal" data-category="math" data-keywords="theory computation automata turing machine formal languages regular">
+    <div class="v-thumb">
+      <img src="https://img.youtube.com/vi/58N2N7zJGrQ/maxresdefault.jpg" alt="TOC" loading="lazy" onerror="this.src='https://img.youtube.com/vi/58N2N7zJGrQ/hqdefault.jpg'"/>
+      <div class="v-overlay"><div class="play-ring"><div class="play-arrow">▶</div></div></div>
+      <span class="v-dur">7:32:00</span>
+    </div>
+    <div class="v-body">
+      <div class="v-cat" style="color:#ffd700">THEORY &amp; MATH</div>
+      <div class="v-title">Theory of Computation &amp; Automata – Full Course</div>
+      <div class="v-ch">Gate Smashers</div>
+      <a class="v-btn" href="https://www.youtube.com/watch?v=58N2N7zJGrQ" target="_blank" rel="noopener"><span>▶ Watch on YouTube ↗</span></a>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESOURCES -->
+<div class="sec-hdr" id="resources">
+  <h2>FREE <span>RESOURCES</span></h2>
+  <div class="sec-line"></div>
+  <span class="sec-count">20+ LINKS</span>
+</div>
+<div class="res-grid">
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/data-structures/" target="_blank" rel="noopener"><div class="r-ico">📗</div><div><div class="r-name">GeeksForGeeks — Data Structures</div><div class="r-type">Theory + Code Examples</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://visualgo.net/en" target="_blank" rel="noopener"><div class="r-ico">🎨</div><div><div class="r-name">VisuAlgo — Algorithm Visualizer</div><div class="r-type">Interactive Animations</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.w3schools.com/sql/" target="_blank" rel="noopener"><div class="r-ico">🗄️</div><div><div class="r-name">W3Schools — SQL Reference</div><div class="r-type">Interactive SQL Tutorial</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://developer.mozilla.org/en-US/docs/Web" target="_blank" rel="noopener"><div class="r-ico">🌐</div><div><div class="r-name">MDN Web Docs</div><div class="r-type">HTML / CSS / JS Reference</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://scikit-learn.org/stable/user_guide.html" target="_blank" rel="noopener"><div class="r-ico">🤖</div><div><div class="r-name">Scikit-learn User Guide</div><div class="r-type">ML Documentation</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.cs.usfca.edu/~galles/visualization/Algorithms.html" target="_blank" rel="noopener"><div class="r-ico">🔬</div><div><div class="r-name">Data Structure Visualizations</div><div class="r-type">USFCA Interactive Tool</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://leetcode.com/problemset/" target="_blank" rel="noopener"><div class="r-ico">💡</div><div><div class="r-name">LeetCode Problem Set</div><div class="r-type">DSA Practice Problems</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.hackerrank.com/domains/data-structures" target="_blank" rel="noopener"><div class="r-ico">🏆</div><div><div class="r-name">HackerRank — Data Structures</div><div class="r-type">Coding Challenges</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/dbms/" target="_blank" rel="noopener"><div class="r-ico">📘</div><div><div class="r-name">GeeksForGeeks — DBMS Notes</div><div class="r-type">Concepts &amp; Interview Prep</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/computer-network-tutorials/" target="_blank" rel="noopener"><div class="r-ico">🔗</div><div><div class="r-name">GeeksForGeeks — Networks</div><div class="r-type">TCP/IP, OSI, Protocols</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://roadmap.sh/computer-science" target="_blank" rel="noopener"><div class="r-ico">🗺️</div><div><div class="r-name">CS Roadmap — roadmap.sh</div><div class="r-type">Full Learning Path Guide</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.cppreference.com/" target="_blank" rel="noopener"><div class="r-ico">📙</div><div><div class="r-name">cppreference.com</div><div class="r-type">C &amp; C++ Reference</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener"><div class="r-ico">🐍</div><div><div class="r-name">Python Official Tutorial</div><div class="r-type">Official Documentation</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/operating-systems/" target="_blank" rel="noopener"><div class="r-ico">⚙️</div><div><div class="r-name">GeeksForGeeks — OS Notes</div><div class="r-type">Scheduling, Memory, Deadlocks</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/cryptography-and-its-types/" target="_blank" rel="noopener"><div class="r-ico">🔐</div><div><div class="r-name">Cryptography Fundamentals</div><div class="r-type">Security Notes &amp; Examples</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.tutorialspoint.com/software_engineering/index.htm" target="_blank" rel="noopener"><div class="r-ico">📐</div><div><div class="r-name">Software Engineering Tutorial</div><div class="r-type">SDLC, Agile, UML</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://brilliant.org/courses/computer-science-fundamentals/" target="_blank" rel="noopener"><div class="r-ico">✨</div><div><div class="r-name">Brilliant — CS Fundamentals</div><div class="r-type">Interactive Learning</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.geeksforgeeks.org/engineering-mathematics-tutorials/" target="_blank" rel="noopener"><div class="r-ico">∑</div><div><div class="r-name">Engineering Mathematics</div><div class="r-type">Discrete Math &amp; Logic</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.coursera.org/learn/algorithms-part1" target="_blank" rel="noopener"><div class="r-ico">🎓</div><div><div class="r-name">Algorithms Part I — Coursera</div><div class="r-type">Princeton University (Free Audit)</div></div><div class="r-arr">→</div></a>
+  <a class="r-item reveal" href="https://www.kaggle.com/learn" target="_blank" rel="noopener"><div class="r-ico">📊</div><div><div class="r-name">Kaggle Learn</div><div class="r-type">ML, Python, SQL Mini-Courses</div></div><div class="r-arr">→</div></a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">CS<em>/</em>ISE STUDY HUB</div>
+  <p>Built for CS &amp; ISE students &bull; All video links open <span>YouTube</span> &bull; All resources are free &amp; open access</p>
+  <p style="margin-top:0.5rem; font-size:0.75rem; opacity:0.5">To publish on GitHub Pages — save as <strong>index.html</strong> and deploy from your repository</p>
+</footer>
+
+<script>
+/* ══ LOADER ══ */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const l = document.getElementById('loader');
+    l.style.transition = 'opacity 0.6s ease';
+    l.style.opacity = '0';
+    setTimeout(() => l.style.display = 'none', 600);
+    startCounters();
+  }, 2000);
+});
+
+/* ══ CUSTOM CURSOR ══ */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+function animRing() {
+  rx += (mx-rx)*0.12; ry += (my-ry)*0.12;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a, button, .s-card, .v-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width='20px'; cursor.style.height='20px';
+    cursor.style.background='var(--magenta)';
+    ring.style.width='50px'; ring.style.height='50px';
+    ring.style.borderColor='rgba(255,0,110,0.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width='12px'; cursor.style.height='12px';
+    cursor.style.background='var(--neon)';
+    ring.style.width='36px'; ring.style.height='36px';
+    ring.style.borderColor='rgba(0,245,255,0.5)';
+  });
+});
+
+/* ══ PARTICLES ══ */
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random()*W; this.y = Math.random()*H;
+    this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4;
+    this.r = Math.random()*1.5+0.3;
+    this.a = Math.random()*0.5+0.1;
+    const c = Math.random();
+    this.color = c<0.5 ? `rgba(0,245,255,${this.a})` : c<0.8 ? `rgba(139,92,246,${this.a})` : `rgba(255,0,110,${this.a})`;
+  }
+  update() {
+    this.x+=this.vx; this.y+=this.vy;
+    if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset();
+  }
+  draw() {
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=this.color; ctx.fill();
+  }
+}
+for(let i=0;i<120;i++) particles.push(new Particle());
+function drawConnections() {
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.strokeStyle=`rgba(0,245,255,${0.06*(1-d/100)})`;
+        ctx.lineWidth=0.5; ctx.stroke();
+      }
+    }
+  }
+}
+function animParticles() {
+  ctx.clearRect(0,0,W,H);
+  particles.forEach(p=>{p.update();p.draw();});
+  drawConnections();
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+/* ══ TYPEWRITER ══ */
+const phrases = ['Learn Data Structures.','Master Algorithms.','Build Real Projects.','Ace Your Placements.','Explore AI & ML.'];
+let pi=0, ci=0, deleting=false;
+const typeEl = document.getElementById('typeTarget');
+function typeWrite() {
+  const phrase = phrases[pi];
+  if(!deleting) {
+    typeEl.textContent = phrase.substring(0,ci+1);
+    ci++;
+    if(ci===phrase.length) { deleting=true; setTimeout(typeWrite,1600); return; }
+  } else {
+    typeEl.textContent = phrase.substring(0,ci-1);
+    ci--;
+    if(ci===0) { deleting=false; pi=(pi+1)%phrases.length; }
+  }
+  setTimeout(typeWrite, deleting?50:90);
+}
+setTimeout(typeWrite, 1800);
+
+/* ══ COUNTER ANIMATION ══ */
+function startCounters() {
+  document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    let current = 0;
+    const step = target/50;
+    const interval = setInterval(() => {
+      current += step;
+      if(current>=target){ el.textContent=target+'+'; clearInterval(interval); return; }
+      el.textContent = Math.floor(current)+'+';
+    }, 30);
+  });
+}
+
+/* ══ 3D TILT on subject cards ══ */
+document.querySelectorAll('.s-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-8px) scale(1.02) rotateX(${-y*10}deg) rotateY(${x*10}deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'translateY(0) scale(1) rotateX(0deg) rotateY(0deg)';
+    card.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform 0.1s ease';
+  });
+});
+
+/* ══ SCROLL REVEAL ══ */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((e,i) => {
+    if(e.isIntersecting) {
+      setTimeout(()=>e.target.classList.add('visible'), (e.target.dataset.delay||0)*1);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach((el,i) => {
+  el.dataset.delay = (i%4)*80;
+  revealObs.observe(el);
+});
+
+/* ══ FILTERS ══ */
+const fBtns = document.querySelectorAll('.f-btn');
+const sCrds = document.querySelectorAll('#subjectsGrid .s-card');
+const vCrds = document.querySelectorAll('#videosGrid .v-card');
+let activeFilter='all', query='';
+
+function applyFilters() {
+  let vs=0, vv=0;
+  sCrds.forEach(c=>{
+    const match = (activeFilter==='all'||c.dataset.category===activeFilter) &&
+                  (query===''||(c.dataset.keywords+c.querySelector('.c-title').textContent).toLowerCase().includes(query));
+    c.classList.toggle('hidden',!match);
+    if(match) vs++;
+  });
+  vCrds.forEach(c=>{
+    const match = (activeFilter==='all'||c.dataset.category===activeFilter) &&
+                  (query===''||(c.dataset.keywords+c.querySelector('.v-title').textContent).toLowerCase().includes(query));
+    c.classList.toggle('hidden',!match);
+    if(match) vv++;
+  });
+  document.getElementById('subjectCount').textContent = vs+' SUBJECT'+(vs!==1?'S':'');
+  document.getElementById('videoCount').textContent = vv+' VIDEO'+(vv!==1?'S':'');
+}
+
+fBtns.forEach(b=>{
+  b.addEventListener('click',()=>{
+    fBtns.forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    activeFilter=b.dataset.filter;
+    applyFilters();
+    /* ripple */
+    const r=document.createElement('span');
+    r.style.cssText='position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);width:0;height:0;transform:translate(-50%,-50%);animation:ripple 0.4s ease forwards;';
+    b.style.position='relative'; b.style.overflow='hidden';
+    b.appendChild(r); setTimeout(()=>r.remove(),400);
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input',e=>{
+  query=e.target.value.trim().toLowerCase();
+  applyFilters();
+});
+
+/* ripple keyframe */
+const style=document.createElement('style');
+style.textContent='@keyframes ripple{to{width:120px;height:120px;opacity:0}}';
+document.head.appendChild(style);
+
+/* ══ GLITCH TITLE ══ */
+const glitch = document.getElementById('glitchTitle');
+setInterval(()=>{
+  glitch.style.animation='none';
+  glitch.offsetHeight;
+  glitch.style.animation='glitchAnim 0.3s steps(2) forwards';
+}, 5000);
+const gs = document.createElement('style');
+gs.textContent=`
+@keyframes glitchAnim {
+  0%   { clip-path:polygon(0 0,100% 0,100% 35%,0 35%); transform:translateX(-3px) skewX(-2deg); }
+  25%  { clip-path:polygon(0 65%,100% 65%,100% 80%,0 80%); transform:translateX(3px) skewX(2deg); }
+  50%  { clip-path:polygon(0 40%,100% 40%,100% 60%,0 60%); transform:translateX(-2px); filter:hue-rotate(90deg); }
+  75%  { clip-path:polygon(0 0,100% 0,100% 100%,0 100%); transform:translateX(0); }
+  100% { clip-path:none; transform:none; filter:none; }
+}`;
+document.head.appendChild(gs);
+</script>
+</body>
+</html>

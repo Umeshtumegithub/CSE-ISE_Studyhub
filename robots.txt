@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://umeshtumegithub.github.io/CSE-ISE_Studyhub/sitemap.xml
